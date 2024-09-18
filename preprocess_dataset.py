@@ -10,7 +10,7 @@ hands = mp_hands.Hands(max_num_hands=1)
 mp_draw = mp.solutions.drawing_utils
 
 #PREPROCESS TRAINING DATASET
-train_dataset_path = 'archive/asl_alphabet_train'
+train_dataset_path = "archive\\asl_alphabet_train\\asl_alphabet_train"
 train_labels = []
 train_landmark_list = []
 
@@ -18,9 +18,12 @@ train_landmark_list = []
 for gesture_folder in os.listdir(train_dataset_path):
     gesture_folder_path = os.path.join(train_dataset_path, gesture_folder)
 
+    print(gesture_folder_path)
     for image_file in os.listdir(gesture_folder_path):
         image_path = os.path.join(gesture_folder_path, image_file)
+        print(image_path)
         img = cv2.imread(image_path)
+
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         result = hands.process(img_rgb)
 
@@ -37,10 +40,10 @@ for gesture_folder in os.listdir(train_dataset_path):
 # save training landmarks and labels to csv
 train_landmarks_df = pd.DataFrame(train_landmark_list)
 train_landmarks_df['Label'] = train_labels
-train_landmarks_df.to_csv('train_landmarks.csv', index=False)
+train_landmarks_df.to_csv('processed_data/train_landmarks.csv', index=False)
 
 # PREPROCESS TEST DATASET
-test_dataset_path = "archive/asl_alphabet_test"
+test_dataset_path = 'archive\\asl_alphabet_test\\asl_alphabet_test'
 test_labels = []
 test_landmark_list = []
 
@@ -48,6 +51,17 @@ test_landmark_list = []
 for image_file in os.listdir(test_dataset_path):
     image_path = os.path.join(test_dataset_path, image_file)
     img = cv2.imread(image_path)
+
+    # Check if the file is 'del', 'nothing', or 'space', otherwise take the first character
+    if 'del' in image_file:
+        label = 'del'
+    elif 'nothing' in image_file:
+        label = 'nothing'
+    elif 'space' in image_file:
+        label = 'space'
+    else:
+        label = image_file[0]  # e.g., from 'A1234' it extracts 'A'
+
     img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     result = hands.process(img_rgb)
 
@@ -61,9 +75,9 @@ for image_file in os.listdir(test_dataset_path):
             test_landmark_list.append(landmarks)
 
             #extract letter from filenames
-            test_labels.append(image_file.split('.')[0])
+            test_labels.append(label)
 
 # Save test landmarks and labels to a CSV file
 test_landmarks_df = pd.DataFrame(test_landmark_list)
 test_landmarks_df['label'] = test_labels
-test_landmarks_df.to_csv("test_landmarks.csv", index=False)
+test_landmarks_df.to_csv("processed_data/test_landmarks.csv", index=False)
