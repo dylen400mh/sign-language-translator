@@ -10,8 +10,8 @@ train_data = pd.read_csv('processed_data/train_landmarks.csv')
 test_data = pd.read_csv('processed_data/test_landmarks.csv')
 
 # split data into features and labels
-X_train = train_data.drop('Label', axis=1)
-y_train = train_data['Label']
+X_train = train_data.drop('label', axis=1)
+y_train = train_data['label']
 
 X_test = test_data.drop('label', axis=1)
 y_test = test_data['label']
@@ -35,17 +35,23 @@ model.add(keras.layers.Dropout(0.3))
 model.add(keras.layers.Dense(128, activation='relu'))
 model.add(keras.layers.Dropout(0.3))
 
-# output layer 
+# output layer
 model.add(keras.layers.Dense(len(label_encoder.classes_), activation='softmax'))
 
 # compile model
-model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
-#print model summary
+# print model summary
 model.summary()
 
+# Add early stopping to prevent overfitting
+early_stopping = keras.callbacks.EarlyStopping(
+    monitor='val_loss', patience=5, restore_best_weights=True)
+
 # train model
-history = model.fit(X_train, y_train_encoded, epochs=25, batch_size=32, validation_data=(X_test, y_test_encoded))
+history = model.fit(X_train, y_train_encoded, epochs=50, batch_size=32,
+                    validation_data=(X_test, y_test_encoded), callbacks=[early_stopping])
 
 # evaluate model on test set
 test_loss, test_accuracy = model.evaluate(X_test, y_test_encoded)
