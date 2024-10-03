@@ -22,22 +22,40 @@ y_test_encoded = label_encoder.transform(y_test)
 
 
 # define neural network
+"""
+I decided to use a Fully-Connected Neural Network over something more complicated like a Convolutional Neural Network due to its simplicity.
+Data flows in one direction, layer by layer.
+I'm working with numberical values that represent hand landmarks, so using a CNN is not necessary.
+If I was analyzing pixel data then a CNN could be more helpful to identify patterns and shapes. 
+"""
 model = keras.models.Sequential()
 
 # input layer
+'''
+Dense layers help connect everything together, allowing the model to learn from features in data.
+Relu is used to ignore negative values, which helps the model pickup more complex patterns and improves its learning capabiltiies.
+Dropout layers help get rid of some data to prevent overfitting. 
+'''
 model.add(keras.layers.Dense(512, input_shape=(
     X_train.shape[1],), activation='relu'))
-
 # hidden layers
 model.add(keras.layers.Dense(256, activation='relu'))
 model.add(keras.layers.Dropout(0.3))
 model.add(keras.layers.Dense(128, activation='relu'))
 model.add(keras.layers.Dropout(0.3))
 
+
 # output layer
+'''
+Softmax is used to convert the outputs into probabilities, which is how the model determines its prediction. 
+'''
 model.add(keras.layers.Dense(len(label_encoder.classes_), activation='softmax'))
 
 # compile model
+'''
+The adam optimizer is used for updating the model to improve accuracy.
+Sparse_categorical_crossentropy is used to calculate how far the model's predictions are from the correct category.
+'''
 model.compile(optimizer='adam',
               loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
@@ -45,6 +63,10 @@ model.compile(optimizer='adam',
 model.summary()
 
 # Add early stopping to prevent overfitting
+'''
+The loss is monitored and if it doesn't improve for 5 epochs, then training stops.
+Model's weights will be set to the point where the model's loss was lowest.
+'''
 early_stopping = keras.callbacks.EarlyStopping(
     monitor='val_loss', patience=5, restore_best_weights=True)
 
